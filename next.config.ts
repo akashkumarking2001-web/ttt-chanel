@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { allowedOrigins: ["*"] },
   },
+  output: "standalone",
 };
 
 export default nextConfig;
