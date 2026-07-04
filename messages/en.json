@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "home": "Home",
+    "playlists": "Playlists",
+    "search": "Search",
+    "about": "About",
+    "subscribe": "Subscribe",
+    "subscribed": "Subscribed ✓"
+  },
+  "home": {
+    "latest": "Latest Videos",
+    "trending": "Trending",
+    "all": "All Videos",
+    "noVideos": "No videos yet. Check back soon!"
+  },
+  "video": {
+    "likes": "Likes",
+    "dislikes": "Dislikes",
+    "share": "Share",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "comments": "Comments",
+    "addComment": "Add a comment...",
+    "yourName": "Your name",
+    "post": "Post",
+    "description": "Description",
+    "links": "Useful Links",
+    "relatedVideos": "Related Videos",
+    "views": "views"
+  },
+  "categories": {
+    "news": "Latest News",
+    "money": "Make Money Online",
+    "parttime": "Part-Time Jobs",
+    "online": "Online Jobs",
+    "lifetime": "Lifetime Jobs",
+    "mobile": "Mobile Tricks",
+    "apps": "App Reviews"
+  },
+  "notifications": {
+    "title": "Get Notified!",
+    "desc": "Subscribe to get push notifications for new videos & posts.",
+    "allow": "Allow Notifications",
+    "later": "Later"
+  },
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "about": "About",
+    "contact": "Contact",
+    "dmca": "DMCA"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "lang": {
+    "en": "English",
+    "ta": "தமிழ்"
+  }
+}
