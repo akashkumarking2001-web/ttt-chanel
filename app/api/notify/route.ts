@@ -3,11 +3,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { d1Query, genId } from "@/lib/d1";
 import webpush from "web-push";
 
-webpush.setVapidDetails(
-  process.env.VAPID_EMAIL!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+let isVapidInitialized = false;
+function initVapid() {
+  if (isVapidInitialized) return;
+  const email = process.env.VAPID_EMAIL;
+  const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!email || !pub || !priv) {
+    console.warn("VAPID details are missing in the build/runtime environment. Skipping web-push setup.");
+    return;
+  }
+  webpush.setVapidDetails(email, pub, priv);
+  isVapidInitialized = true;
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as { action: string; subscription?: PushSubscription; title?: string; body?: string; url?: string; image?: string };
@@ -23,6 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "send") {
+    initVapid();
     const result = await d1Query<{ endpoint: string; p256dh: string; auth: string }>(
       "SELECT endpoint, p256dh, auth FROM subscribers"
     );
