@@ -32,7 +32,7 @@ export default function Navbar() {
       <nav className="navbar">
         <div className="navbar-inner">
           <Link href="/" className="logo">
-            <div className="logo-icon"><Video size={18} color="white" /></div>
+            <img src="/logo.png" alt="TTT Family Logo" className="logo-img" style={{ height: "30px", width: "auto", marginRight: "8px" }} />
             <span className="logo-text">Top Tamil Tricks</span>
           </Link>
 
