@@ -1,12 +1,13 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, use } from "react";
 import { Upload, Link2, PlayCircle, CloudUpload } from "lucide-react";
 import toast from "react-hot-toast";
 
 const CATEGORIES = ["news","money","parttime","online","lifetime","mobile","apps"];
 type VideoType = "youtube" | "cloudflare" | "blogger" | "post";
 
-export default function NewVideo() {
+export default function EditVideo({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [title, setTitle] = useState("");
   const [titleTa, setTitleTa] = useState("");
   const [description, setDescription] = useState("");
@@ -20,8 +21,31 @@ export default function NewVideo() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch(`/api/videos?id=${id}`)
+      .then(r => r.json())
+      .then(data => {
+        setTitle(data.title || "");
+        setTitleTa(data.titleTa || "");
+        setDescription(data.description || "");
+        setDescriptionTa(data.descriptionTa || "");
+        setCategory(data.category || "mobile");
+        setVideoType(data.videoType || "youtube");
+        setVideoUrl(data.videoUrl || "");
+        setThumbnail(data.thumbnail || "");
+        setDuration(data.duration || "");
+        setLinks(data.links?.length ? data.links : [{ label: "", url: "" }]);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error("Failed to load video");
+        setLoading(false);
+      });
+  }, [id]);
 
   // Upload to R2 via API
   const uploadToR2 = async (file: File, type: "video" | "thumb"): Promise<string> => {
@@ -40,7 +64,6 @@ export default function NewVideo() {
     setUploading(true);
     setProgress(10);
     try {
-      // Simulate progress
       const interval = setInterval(() => setProgress(p => Math.min(p + 15, 85)), 500);
       const url = await uploadToR2(file, "video");
       clearInterval(interval);
@@ -67,8 +90,8 @@ export default function NewVideo() {
     if (!videoUrl && videoType !== "post") { toast.error("Please add a video URL or upload a video"); return; }
     setSaving(true);
     try {
-      const res = await fetch("/api/videos", {
-        method: "POST",
+      const res = await fetch(`/api/videos?id=${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title, titleTa, description, descriptionTa, category, videoType, videoUrl,
@@ -76,17 +99,9 @@ export default function NewVideo() {
           links: links.filter(l => l.label && l.url),
         }),
       });
-      const data = await res.json() as { success: boolean; id?: string; error?: string };
+      const data = await res.json() as { success: boolean; error?: string };
       if (data.success) {
-        // Send push notification
-        fetch("/api/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "send", title: "New Video!", body: title, url: `/video/${data.id}` }),
-        }).catch(() => {});
-        toast.success(`Video published! ID: ${data.id}`);
-        setTitle(""); setTitleTa(""); setDescription(""); setDescriptionTa(""); setVideoUrl(""); setThumbnail(""); setDuration("");
-        setLinks([{ label: "", url: "" }]);
+        toast.success("Video updated successfully!");
       } else {
         toast.error(data.error || "Failed to save");
       }
@@ -98,9 +113,11 @@ export default function NewVideo() {
   const updateLink = (i: number, k: "label" | "url", v: string) => setLinks(l => l.map((lnk, idx) => idx === i ? { ...lnk, [k]: v } : lnk));
   const removeLink = (i: number) => setLinks(l => l.filter((_, idx) => idx !== i));
 
+  if (loading) return <div style={{ color: "white", padding: 40 }}>Loading...</div>;
+
   return (
     <>
-      <h1 className="admin-page-title">🎬 Upload New Video</h1>
+      <h1 className="admin-page-title">✏️ Edit Video</h1>
       <form onSubmit={handleSubmit}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {/* Left column */}
@@ -155,18 +172,14 @@ export default function NewVideo() {
 
               {videoType === "post" ? (
                 <div style={{ background: "#1a1a1a", border: "1px dashed #333", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#888", textAlign: "center" }}>
-                  This will be published as a Blog Post without a video. Make sure to upload a Thumbnail.
+                  This is published as a Blog Post without a video.
                 </div>
-              ) : videoType !== "blogger" || !videoUrl ? (
+              ) : (
                 <div className="form-group">
                   <label className="form-label">
                     {videoType === "youtube" ? "YouTube URL" : videoType === "cloudflare" ? "Cloudflare Stream URL" : "Video Direct URL"}
                   </label>
-                  <input className="form-input" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder={videoType === "youtube" ? "https://youtube.com/watch?v=..." : videoType === "cloudflare" ? "https://...cloudflarestream.com/..." : "https://..."} id="video-url" />
-                </div>
-              ) : (
-                <div style={{ background: "#1a3a1a", border: "1px solid #22c55e", borderRadius: 8, padding: 12, marginBottom: 12, fontSize: 13, color: "#22c55e" }}>
-                  ✅ Video uploaded to Cloudflare R2!<br /><small style={{ color: "#888", wordBreak: "break-all" }}>{videoUrl.slice(0, 60)}...</small>
+                  <input className="form-input" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="URL..." id="video-url" />
                 </div>
               )}
 
@@ -175,7 +188,7 @@ export default function NewVideo() {
                   <label className="form-label">— OR — Upload to Cloudflare R2</label>
                   <input ref={fileRef} type="file" accept="video/*" onChange={handleVideoUpload} style={{ display: "none" }} id="video-file-input" />
                   <button type="button" onClick={() => fileRef.current?.click()} className="btn-primary" style={{ background: "#6366f1", display: "flex", alignItems: "center", gap: 8 }} disabled={uploading}>
-                    <Upload size={16} /> {uploading ? `Uploading ${progress}%...` : "Upload Video File"}
+                    <Upload size={16} /> {uploading ? `Uploading ${progress}%...` : "Upload New Video File"}
                   </button>
                   {uploading && <div style={{ marginTop: 8, height: 4, background: "#333", borderRadius: 2 }}><div style={{ height: "100%", width: `${progress}%`, background: "#e94560", borderRadius: 2, transition: "width 0.3s" }} /></div>}
                 </div>
@@ -190,7 +203,7 @@ export default function NewVideo() {
               </div>
               <input ref={thumbRef} type="file" accept="image/*" onChange={handleThumbUpload} style={{ display: "none" }} id="thumb-file-input" />
               <button type="button" onClick={() => thumbRef.current?.click()} style={{ color: "#e94560", background: "none", fontSize: 13, marginBottom: 12 }}>
-                <Upload size={14} style={{ display: "inline", marginRight: 6 }} />Upload Image to R2
+                <Upload size={14} style={{ display: "inline", marginRight: 6 }} />Upload New Image to R2
               </button>
               {thumbnail && <img src={thumbnail} alt="Thumbnail preview" style={{ width: "100%", borderRadius: 8, marginTop: 8, objectFit: "cover", maxHeight: 160 }} />}
             </div>
@@ -213,7 +226,7 @@ export default function NewVideo() {
         </div>
 
         <button type="submit" className="btn-primary" style={{ fontSize: 16, padding: "14px 32px" }} disabled={saving} id="publish-btn">
-          {saving ? "Publishing..." : "🚀 Publish Video"}
+          {saving ? "Saving..." : "💾 Save Changes"}
         </button>
       </form>
     </>

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
+// import Image from "next/image";
 import { Eye, ThumbsUp } from "lucide-react";
 import { useApp } from "./ClientRoot";
 
@@ -13,8 +13,8 @@ export interface VideoDoc {
   duration?: string;
   views?: number;
   likes?: number;
-  createdAt?: { seconds: number };
-  videoType: "youtube" | "cloudflare" | "blogger";
+  createdAt?: { seconds: number } | number;
+  videoType: "youtube" | "cloudflare" | "blogger" | "post";
 }
 
 function timeAgo(seconds: number): string {
@@ -46,14 +46,16 @@ export default function VideoCard({ video }: { video: VideoDoc }) {
     <Link href={`/video/${video.id}`} className="video-card" id={`video-card-${video.id}`}>
       <div className="video-thumbnail">
         {video.thumbnail ? (
-          <Image src={video.thumbnail} alt={title} fill sizes="(max-width:768px) 100vw, 33vw" style={{ objectFit: "cover" }} />
+          <img src={video.thumbnail} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", inset: 0 }} />
         ) : (
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#1a0010,#0d0d0d)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48 }}>🎬</div>
         )}
-        {video.duration && <span className="thumb-duration">{video.duration}</span>}
-        <div className="thumb-play">
-          <div className="thumb-play-icon">▶</div>
-        </div>
+        {video.duration && video.videoType !== "post" && <span className="thumb-duration">{video.duration}</span>}
+        {video.videoType !== "post" && (
+          <div className="thumb-play">
+            <div className="thumb-play-icon">▶</div>
+          </div>
+        )}
       </div>
       <div className="video-card-body">
         <div className="video-category-tag">{cat}</div>
@@ -61,7 +63,7 @@ export default function VideoCard({ video }: { video: VideoDoc }) {
         <div className="video-meta">
           {video.views != null && <span><Eye size={12} /> {video.views.toLocaleString()}</span>}
           {video.likes != null && <span><ThumbsUp size={12} /> {video.likes}</span>}
-          {video.createdAt && <span>{timeAgo(video.createdAt.seconds)}</span>}
+          {video.createdAt && <span>{timeAgo(typeof video.createdAt === 'number' ? video.createdAt : video.createdAt.seconds)}</span>}
         </div>
       </div>
     </Link>

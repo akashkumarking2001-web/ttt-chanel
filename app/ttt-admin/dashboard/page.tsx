@@ -41,7 +41,7 @@ export default function AdminDashboard() {
               <Icon size={18} style={{ color }} />
             </div>
             <div style={{ fontSize: "2rem", fontWeight: 800, color: "#fff" }}>
-              {loading ? "—" : value}
+              {loading ? <div style={{ width: 60, height: 32, background: "#333", borderRadius: 4, animation: "pulse 1.5s infinite" }} /> : value}
             </div>
           </div>
         ))}

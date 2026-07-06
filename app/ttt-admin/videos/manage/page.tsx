@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Trash2, ExternalLink } from "lucide-react";
+import { Trash2, ExternalLink, Edit } from "lucide-react";
 import toast from "react-hot-toast";
 import { VideoDoc } from "@/components/VideoCard";
 
@@ -62,6 +62,10 @@ export default function ManageVideos() {
                       <a href={`/video/${v.id}`} target="_blank" rel="noopener noreferrer"
                         style={{ color: "#3b82f6", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: 6, padding: "4px 8px", textDecoration: "none", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
                         <ExternalLink size={12} /> View
+                      </a>
+                      <a href={`/ttt-admin/videos/edit/${v.id}`}
+                        style={{ color: "#f59e0b", background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 6, padding: "4px 8px", textDecoration: "none", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                        <Edit size={12} /> Edit
                       </a>
                       <button onClick={() => deleteVideo(v.id)}
                         style={{ color: "#ef4444", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 6, padding: "4px 8px", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>

@@ -42,6 +42,8 @@ export default function CommentSection({ videoId }: { videoId: string }) {
 
   useEffect(() => {
     fetchComments();
+    const interval = setInterval(fetchComments, 1000);
+    return () => clearInterval(interval);
   }, [videoId]);
 
   const handleSubmit = async (e: React.FormEvent) => {

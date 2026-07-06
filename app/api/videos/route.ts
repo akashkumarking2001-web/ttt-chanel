@@ -103,3 +103,32 @@ export async function PATCH(req: NextRequest) {
 
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
+
+export async function PUT(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+
+  const body = await req.json() as Record<string, unknown>;
+  const links = JSON.stringify(body.links || []);
+
+  const result = await d1Query(
+    `UPDATE videos SET title = ?, titleTa = ?, description = ?, descriptionTa = ?, category = ?, videoType = ?, videoUrl = ?, thumbnail = ?, duration = ?, links = ? WHERE id = ?`,
+    [
+      body.title as string,
+      (body.titleTa as string) || null,
+      (body.description as string) || null,
+      (body.descriptionTa as string) || null,
+      (body.category as string) || "mobile",
+      (body.videoType as string) || "youtube",
+      body.videoUrl as string || "",
+      (body.thumbnail as string) || null,
+      (body.duration as string) || null,
+      links,
+      id,
+    ]
+  );
+
+  if (!result.success) return NextResponse.json({ error: result.error }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

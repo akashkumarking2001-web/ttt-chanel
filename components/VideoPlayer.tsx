@@ -1,7 +1,7 @@
 "use client";
 
 interface VideoPlayerProps {
-  videoType: "youtube" | "cloudflare" | "blogger";
+  videoType: "youtube" | "cloudflare" | "blogger" | "post";
   videoUrl: string;
   title: string;
 }
@@ -12,9 +12,8 @@ function getYouTubeId(url: string): string {
 }
 
 function getCloudflareId(url: string): string {
-  // Cloudflare stream URL: https://customer-xxx.cloudflarestream.com/VIDEO_ID/iframe
   const match = url.match(/cloudflarestream\.com\/([^/]+)/);
-  return match ? match[1] : url;
+  return match ? match[1] : url.split('/').pop() || url;
 }
 
 export default function VideoPlayer({ videoType, videoUrl, title }: VideoPlayerProps) {
@@ -40,7 +39,7 @@ export default function VideoPlayer({ videoType, videoUrl, title }: VideoPlayerP
         <video
           src={videoUrl}
           controls
-          autoPlay
+          playsInline
           style={{ width: "100%", height: "100%", position: "absolute", inset: 0, background: "#000" }}
           title={title}
         />

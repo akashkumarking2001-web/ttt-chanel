@@ -13,6 +13,7 @@ interface VideoData extends VideoDoc {
   descriptionTa?: string;
   links?: { label: string; url: string }[];
   dislikes?: number;
+  videoType: "youtube" | "cloudflare" | "blogger" | "post";
   videoUrl: string;
 }
 
@@ -68,7 +69,15 @@ export default function VideoPage({ params }: { params: Promise<{ id: string }> 
   return (
     <div className="video-page">
       <div className="video-main">
-        <VideoPlayer videoType={video.videoType} videoUrl={video.videoUrl} title={title} />
+        {video.videoType === "post" ? (
+          video.thumbnail && (
+            <div className="player-wrap" style={{ background: "#000", display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <img src={video.thumbnail} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          )
+        ) : (
+          <VideoPlayer videoType={video.videoType} videoUrl={video.videoUrl} title={title} />
+        )}
 
         <div className="video-info">
           <h1 className="video-page-title">{title}</h1>
